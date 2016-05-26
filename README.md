@@ -1,6 +1,5 @@
 # Overview
 Item Catalog application made with Flask
-Version: 0.5.0
 
 # Components
 - Routing and Templating made with Flask
@@ -11,7 +10,8 @@ Version: 0.5.0
 - Front-end forms and webpages built with boostrap
 
 # To run the application:
-- Install the dependency libraries (Flask, sqlalchemy, requests and oauth2client)
+- Install the dependency libraries (Flask, sqlalchemy, requests and oauth2client) by running `pip install -r requirements.txt`
+- Seeding the database: `python database_seed.py` (Sample items and categories can be added there)
 - Run `python project.py`
 
 # License

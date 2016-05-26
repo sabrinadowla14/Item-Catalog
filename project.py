@@ -26,12 +26,11 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-
 # ------------------------------------------------------------------
 #                       Helper Methods
 # ------------------------------------------------------------------
 def login_required(f):
-    ''' Checks if the user is logged in or not '''
+    """ Checks if the user is logged in or not """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'username' in login_session:
@@ -42,21 +41,21 @@ def login_required(f):
     return decorated_function
 
 def checkIfTitleExists(title):
-    ''' Checks if an item exists with the same unique title in db '''
+    """ Checks if an item exists with the same unique title in db """
     results = session.query(CategoryItem).filter_by(title=title).all()
     return len(results) > 0
-
 
 # ------------------------------------------------------------------
 #                             Routes
 # ------------------------------------------------------------------
 @app.route('/')
 def routeToMain():
+    """ Main Page """
     return redirect(url_for('getMainPage'))
 
-# Routes for interating with categories and items
-@app.route('/catalog/JSON')     # returns JSON of the catalog
+@app.route('/catalog/JSON')    
 def getCatalog():
+    """ Returns JSON version of the catalog """
     output_json = []
     categories = session.query(Category).all()
     for category in categories:
@@ -68,8 +67,9 @@ def getCatalog():
         output_json.append(category_output)
     return jsonify(Categories=output_json)
 
-@app.route('/catalog', methods=['GET', 'POST'])         # main page
+@app.route('/catalog', methods=['GET', 'POST'])         
 def getMainPage():
+    """ Handler for main page, includes auth, session management """
     try:
         user = login_session['username']
     except KeyError:
@@ -160,9 +160,9 @@ def getMainPage():
         flash("you are now logged in as %s" % login_session['username'])
         return redirect(url_for('getMainPage'))
 
-# Selecting by category
 @app.route('/catalog/categories/<category_name>/')
 def getCategoryItems(category_name):
+    """ Returns items for a given category name """
     categories = session.query(Category).all()
     selected_category = session.query(Category).filter_by(name=category_name).one()
     items = session.query(CategoryItem).filter_by(category_id=selected_category.id).all()
@@ -180,19 +180,19 @@ def getCategoryItems(category_name):
         items=items, categories=categories, category_names=category_names
     )
 
-# View item details
 @app.route('/catalog/items/<item_title>/')
 def getItemDetails(item_title):
+    """ Returns a specific item object given its title """
     item = session.query(CategoryItem).filter_by(title=item_title).one()
     category = session.query(Category).filter_by(id=item.category_id).one()
     return render_template(
         'item_detail.html', item=item, category=category
     )
 
-# Adding a new item
 @app.route('/catalog/items/new', methods=['GET', 'POST'])
 @login_required
 def newItem():
+    """ Handles the creation of a new item """
     categories = session.query(Category).all()
     try:
         user = login_session['username']
@@ -215,10 +215,10 @@ def newItem():
             'create_item.html', categories=categories, user=user
         )
 
-# Edit given item
 @app.route('/catalog/items/<item_title>/edit', methods=['GET', 'POST'])
 @login_required
 def editItem(item_title):
+    """ Handles updating an existing item """
     editedItem = session.query(CategoryItem).filter_by(title=item_title).one()
     category = session.query(Category).filter_by(id=editedItem.category_id).one()
     categories = session.query(Category).all()
@@ -244,10 +244,10 @@ def editItem(item_title):
             categories=categories, user=user
         )
 
-# Delete given item
 @app.route('/catalog/items/<item_title>/delete', methods=['GET', 'POST'])
 @login_required
 def deleteItem(item_title):
+    """ Deletes an item given its unique title """
     if request.method == 'POST':
         itemToDelete = session.query(CategoryItem).filter_by(title=item_title).one()
         session.delete(itemToDelete)
@@ -261,6 +261,7 @@ def deleteItem(item_title):
 
 @app.route('/gdisconnect')
 def gdisconnect():
+    """ Helper for disconnecting from Google Auth """
     access_token = login_session['access_token']
     print 'In gdisconnect access token is %s', access_token
     print 'User name is: '
